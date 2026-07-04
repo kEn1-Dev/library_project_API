@@ -258,3 +258,53 @@ export const getDownloadsForResource = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const getMyDownloads = async (req: Request, res: Response) => {
+  try {
+    const id_usuario = req.user?.id_usuario;
+    if (!id_usuario) {
+      return res.status(401).json({
+        success: false,
+        message: 'No autenticado o id_usuario ausente',
+      });
+    }
+    const downloads = await recursoService.getDownloadsByUser(id_usuario);
+    res.status(200).json({
+      success: true,
+      count: downloads.length,
+      data: downloads,
+    });
+  } catch (error: any) {
+    console.error('Error en getMyDownloads:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener el historial de descargas',
+      error: error.message,
+    });
+  }
+};
+
+export const getMyResources = async (req: Request, res: Response) => {
+  try {
+    const id_usuario = req.user?.id_usuario;
+    if (!id_usuario) {
+      return res.status(401).json({
+        success: false,
+        message: 'No autenticado o id_usuario ausente',
+      });
+    }
+    const resources = await recursoService.getResourcesByUser(id_usuario);
+    res.status(200).json({
+      success: true,
+      count: resources.length,
+      data: resources,
+    });
+  } catch (error: any) {
+    console.error('Error en getMyResources:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al obtener los recursos subidos',
+      error: error.message,
+    });
+  }
+};

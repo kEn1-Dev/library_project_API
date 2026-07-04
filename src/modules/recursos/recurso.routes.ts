@@ -11,10 +11,12 @@ router.delete('/categorias/:id', authenticateJWT, requireRole([1]), recursoContr
 
 // Downloads routes
 router.post('/descargas', recursoController.createDownload);
+router.get('/usuario/descargas', authenticateJWT, recursoController.getMyDownloads);
 router.get('/:id/descargas', recursoController.getDownloadsForResource);
 
 // Resources routes
 router.post('/', authenticateJWT, recursoController.createResource);
+router.get('/usuario/mis-recursos', authenticateJWT, recursoController.getMyResources);
 router.get('/:id', recursoController.getResourceById);
 router.get('/', recursoController.getAllResources);
 router.put('/:id', authenticateJWT, recursoController.updateResource);

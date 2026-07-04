@@ -211,3 +211,43 @@ export const getDownloadsForResource = async (id_recurso: number): Promise<any[]
   );
   return rows;
 };
+
+export const getDownloadsByUser = async (id_usuario: number): Promise<any[]> => {
+  const [rows]: any = await db.query(
+    `SELECT 
+       r.id_recurso,
+       r.titulo,
+       r.descripcion,
+       r.url_recurso,
+       r.url_portada,
+       c.nombre_categoria,
+       COUNT(d.id_descarga) as cantidad_descargas,
+       MAX(d.fecha_descarga) as ultima_descarga
+     FROM descargas d
+     INNER JOIN recursos r ON d.id_recurso = r.id_recurso
+     INNER JOIN categorias c ON r.id_categoria = c.id_categoria
+     WHERE d.id_usuario = ?
+     GROUP BY r.id_recurso, r.titulo, r.descripcion, r.url_recurso, r.url_portada, c.nombre_categoria
+     ORDER BY ultima_descarga DESC`,
+    [id_usuario]
+  );
+  return rows;
+};
+
+export const getResourcesByUser = async (id_usuario: number): Promise<any[]> => {
+  const [rows]: any = await db.query(
+    `SELECT 
+       r.*, 
+       c.nombre_categoria,
+       COUNT(d.id_descarga) as total_descargas
+     FROM recursos r
+     INNER JOIN categorias c ON r.id_categoria = c.id_categoria
+     LEFT JOIN descargas d ON r.id_recurso = d.id_recurso
+     WHERE r.id_usuario = ?
+     GROUP BY r.id_recurso, r.titulo, r.descripcion, r.url_recurso, r.url_portada, r.fecha_subida, r.id_usuario, r.id_categoria, c.nombre_categoria
+     ORDER BY r.fecha_subida DESC`,
+    [id_usuario]
+  );
+  return rows;
+};
+
