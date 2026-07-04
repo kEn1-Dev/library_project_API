@@ -137,3 +137,67 @@ export const getAllUsers = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const updateUser = async (req: Request, res: Response) => {
+  try {
+    const targetUserId = Number(req.params.id);
+    const requestingUser = req.user;
+
+    if (!requestingUser) {
+      return res.status(401).json({
+        success: false,
+        message: 'No autorizado',
+      });
+    }
+
+    const isAdmin = requestingUser.id_rol === 1;
+    const isSelf = requestingUser.id_usuario === targetUserId;
+
+    if (!isAdmin && !isSelf) {
+      return res.status(403).json({
+        success: false,
+        message: 'No tienes permiso para actualizar este usuario',
+      });
+    }
+
+    const { nombre, correo, contrasena, id_rol } = req.body;
+
+    // Protección de escalación de rol
+    if (id_rol !== undefined && !isAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: 'Solo los administradores pueden cambiar los roles de usuario',
+      });
+    }
+
+    const updateData: any = {};
+    if (nombre) updateData.nombre = nombre;
+    if (correo) updateData.correo = correo;
+    if (contrasena) updateData.contrasena = contrasena;
+    if (id_rol !== undefined) updateData.id_rol = id_rol;
+
+    const result = await userService.updateUser(targetUserId, updateData);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Usuario no encontrado',
+      });
+    }
+
+    const updatedUser = await userService.findUserById(targetUserId);
+
+    res.status(200).json({
+      success: true,
+      message: 'Usuario actualizado correctamente',
+      data: updatedUser,
+    });
+  } catch (error: any) {
+    console.error('Error en updateUser:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error al actualizar el usuario',
+      error: error.message,
+    });
+  }
+};

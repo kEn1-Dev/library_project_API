@@ -10,5 +10,6 @@ router.post('/login', userController.login);
 // Protected routes
 router.get('/profile', authenticateJWT, userController.getProfile);
 router.get('/', authenticateJWT, requireRole([1]), userController.getAllUsers);
+router.put('/:id', authenticateJWT, userController.updateUser);
 
 export default router;

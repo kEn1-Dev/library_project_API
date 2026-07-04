@@ -81,3 +81,60 @@ export const getAllUsers = async (): Promise<any[]> => {
   );
   return rows;
 };
+
+export interface UpdateUserData {
+  nombre?: string;
+  correo?: string;
+  contrasena?: string;
+  id_rol?: number;
+}
+
+export const updateUser = async (id_usuario: number, updateData: UpdateUserData): Promise<any> => {
+  const { nombre, correo, contrasena, id_rol } = updateData;
+  const fields: string[] = [];
+  const values: any[] = [];
+
+  if (nombre) {
+    fields.push('nombre = ?');
+    values.push(nombre);
+  }
+
+  if (correo) {
+    // Validar que el correo no esté ocupado por otro usuario
+    const [existingEmail]: any = await db.query(
+      'SELECT id_usuario FROM usuarios WHERE correo = ? AND id_usuario != ?',
+      [correo, id_usuario]
+    );
+    if (existingEmail.length > 0) {
+      throw new Error('El correo electrónico ya está registrado por otro usuario');
+    }
+    fields.push('correo = ?');
+    values.push(correo);
+  }
+
+  if (contrasena) {
+    const hashedPassword = await bcrypt.hash(contrasena, 10);
+    fields.push('contrasena_hash = ?');
+    values.push(hashedPassword);
+  }
+
+  if (id_rol !== undefined) {
+    fields.push('id_rol = ?');
+    values.push(id_rol);
+  }
+
+  if (fields.length === 0) {
+    throw new Error('No se enviaron campos para actualizar');
+  }
+
+  values.push(id_usuario);
+
+  const [result]: any = await db.query(
+    `UPDATE usuarios SET ${fields.join(', ')} WHERE id_usuario = ?`,
+    values
+  );
+
+  return {
+    affectedRows: result.affectedRows,
+  };
+};
