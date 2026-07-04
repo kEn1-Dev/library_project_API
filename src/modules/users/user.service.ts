@@ -138,3 +138,47 @@ export const updateUser = async (id_usuario: number, updateData: UpdateUserData)
     affectedRows: result.affectedRows,
   };
 };
+
+export interface SearchUsersFilters {
+  search?: string;
+  id_usuario?: number;
+  nombre?: string;
+  correo?: string;
+}
+
+export const searchUsers = async (filters: SearchUsersFilters): Promise<any[]> => {
+  const { search, id_usuario, nombre, correo } = filters;
+  let sql = `SELECT id_usuario, nombre, correo, id_rol, fecha_registro FROM usuarios`;
+  const conditions: string[] = [];
+  const values: any[] = [];
+
+  if (search) {
+    conditions.push('(id_usuario = ? OR nombre LIKE ? OR correo LIKE ?)');
+    const searchId = Number(search);
+    values.push(isNaN(searchId) ? 0 : searchId);
+    values.push(`%${search}%`);
+    values.push(`%${search}%`);
+  } else {
+    if (id_usuario) {
+      conditions.push('id_usuario = ?');
+      values.push(id_usuario);
+    }
+    if (nombre) {
+      conditions.push('nombre LIKE ?');
+      values.push(`%${nombre}%`);
+    }
+    if (correo) {
+      conditions.push('correo LIKE ?');
+      values.push(`%${correo}%`);
+    }
+  }
+
+  if (conditions.length > 0) {
+    sql += ` WHERE ${conditions.join(' AND ')}`;
+  }
+
+  sql += ` ORDER BY id_usuario DESC`;
+
+  const [rows]: any = await db.query(sql, values);
+  return rows;
+};

@@ -122,7 +122,15 @@ export const getProfile = async (req: Request, res: Response) => {
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
-    const users = await userService.getAllUsers();
+    const { search, id, nombre, correo } = req.query;
+
+    const filters: any = {};
+    if (search) filters.search = String(search);
+    if (id) filters.id_usuario = Number(id);
+    if (nombre) filters.nombre = String(nombre);
+    if (correo) filters.correo = String(correo);
+
+    const users = await userService.searchUsers(filters);
     res.status(200).json({
       success: true,
       count: users.length,

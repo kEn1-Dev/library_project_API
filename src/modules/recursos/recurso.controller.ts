@@ -40,6 +40,24 @@ export const getAllCategories = async (req: Request, res: Response) => {
   }
 };
 
+export const deleteCategory = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const result = await recursoService.deleteCategory(Number(id));
+    res.status(200).json({
+      success: true,
+      message: 'Categoría eliminada correctamente',
+    });
+  } catch (error: any) {
+    console.error('Error en deleteCategory:', error);
+    const status = error.message === 'Categoría no encontrada' ? 404 : 400;
+    res.status(status).json({
+      success: false,
+      message: error.message || 'Error al eliminar la categoría',
+    });
+  }
+};
+
 // === Resources Controllers ===
 
 export const createResource = async (req: Request, res: Response) => {

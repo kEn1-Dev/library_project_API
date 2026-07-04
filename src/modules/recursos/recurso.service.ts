@@ -36,6 +36,23 @@ export const getAllCategories = async (): Promise<any[]> => {
   return rows;
 };
 
+export const deleteCategory = async (id_categoria: number): Promise<any> => {
+  const [cat]: any = await db.query('SELECT id_categoria FROM categorias WHERE id_categoria = ?', [id_categoria]);
+  if (cat.length === 0) {
+    throw new Error('Categoría no encontrada');
+  }
+
+  const [resources]: any = await db.query('SELECT id_recurso FROM recursos WHERE id_categoria = ? LIMIT 1', [id_categoria]);
+  if (resources.length > 0) {
+    throw new Error('No se puede eliminar la categoría porque contiene recursos asociados');
+  }
+
+  const [result]: any = await db.query('DELETE FROM categorias WHERE id_categoria = ?', [id_categoria]);
+  return {
+    affectedRows: result.affectedRows,
+  };
+};
+
 // === Resources (recursos) Operations ===
 
 export const createResource = async (resourceData: ResourceData): Promise<any> => {

@@ -7,6 +7,7 @@ const router = Router();
 // Categories routes
 router.post('/categorias', authenticateJWT, requireRole([1]), recursoController.createCategory);
 router.get('/categorias', recursoController.getAllCategories);
+router.delete('/categorias/:id', authenticateJWT, requireRole([1]), recursoController.deleteCategory);
 
 // Downloads routes
 router.post('/descargas', recursoController.createDownload);
